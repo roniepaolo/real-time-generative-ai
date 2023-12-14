@@ -1,0 +1,19 @@
+- hosts: brokers
+  connection: local
+  become: yes
+  vars:
+    cluster_id: "NDVDODAwOEVDREJDNEMwRD"
+    node_ids: "{{ groups['brokers']
+      | map('extract', hostvars, 'node_id')
+      | list }}"
+    node_ips: "{{ groups['brokers']
+      | map('extract', hostvars, ['ansible_default_ipv4', 'address'])
+      | list }}"
+    kafka_controllers: "{{ node_ids
+      | zip(node_ips)
+      | map('join', '@')
+      | join(':9093,') }}:9093"
+  vars_files:
+    - brokers_vars.yml
+  roles:
+    - deploy-kafka

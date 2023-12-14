@@ -1,0 +1,14 @@
+- hosts: brokers
+  connection: local
+
+- hosts: schema_registry
+  connection: local
+  become: yes
+  vars:
+    kafka_servers: "{{ groups['brokers']
+      | map('extract', hostvars, ['ansible_default_ipv4', 'address'])
+      | join(':9092,') }}:9092"
+  vars_files:
+    - sr_vars.yml
+  roles:
+    - deploy-sr

@@ -1,0 +1,40 @@
+- name: Create a directory if it does not exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: 1001
+    group: 1001
+  loop:
+    - "{{ app_dir }}"
+    - "{{ storage_dir }}"
+    - "{{ kafka_data_dir }}"
+    - "{{ log_dir }}"
+    - "{{ config_dir }}"
+
+- name: Find deployment files
+  become: true
+  find:
+    paths: "{{ build_src }}"
+    hidden: yes
+    use_regex: yes
+    excludes: .*j2$
+  delegate_to: localhost
+  register: target_files
+
+- name: Push deployment files
+  copy:
+    src: "{{ item.path }}"
+    dest: "{{ build_dir }}/"
+    owner: "{{ target_user }}"
+    group: "{{ target_group }}"
+  with_items:
+    - "{{ target_files.files }}"
+
+- name: Push deployment files (templates)
+  template:
+    src: "{{ item }}"
+    dest: "{{ app_dir }}/{{ item | basename | regex_replace('.j2$', '') }}"
+    owner: "{{ target_user }}"
+    group: "{{ target_group }}"
+  with_fileglob:
+    - "{{ app_src }}/*.j2"

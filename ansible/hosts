@@ -1,0 +1,5 @@
+[brokers]
+gen1 ansible_connection=local hostname=gen1 node_id=1
+
+[schema_registry]
+spc1 ansible_connection=local hostname=spc1
